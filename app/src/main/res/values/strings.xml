@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Newsdroid</string>
+    <string name="hello">Hello</string>
+    <string name="_5_years">(5 Years)</string>
+    <string name="software_developer">Software Developer</string>
+    <string name="_50_000">50,000 LPA</string>
+    <string name="add_employee">add_employee</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="search_news">Search News</string>
+    <string name="breaking_news">Breaking News</string>
+    <string name="bookmark_news">Bookmark News</string>
+    <string name="article">Article</string>
+    <string name="news_description">News Description</string>
+    <string name="news_title">News Title</string>
+    <string name="news_author">News Author</string>
+    <string name="news_time">News Time</string>
+    <string name="watch_icon">Watch icon</string>
+    <string name="android_phones">Android Phones</string>
+    <string name="eg_politics">eg: Politics</string>
+    <string name="search">Search</string>
+    <string name="save_fab">Save Fab</string>
+</resources>

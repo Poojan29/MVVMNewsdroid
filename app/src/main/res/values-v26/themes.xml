@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="news_feed_text_style" parent="Widget.MaterialComponents.TextView">
+        <item name="android:textColor">?attr/colorOnTertiary</item>
+        <item name="android:paddingHorizontal">10dp</item>
+
+    </style>
+</resources>

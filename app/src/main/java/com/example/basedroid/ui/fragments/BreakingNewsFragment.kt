@@ -7,6 +7,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
 import android.widget.AbsListView
+import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -49,50 +50,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
                 bundle
             )
         }
-
-        var job: Job? = null
-
-        search_bar.addTextChangedListener { editable ->
-            job?.cancel()
-            job = MainScope().launch {
-                delay(500L)
-                editable?.let {
-                    if (editable.isNotEmpty()) {
-                        newsViewModel.getSearchNews(editable.toString())
-                    } else {
-                        updateNews()
-                    }
-                }
-            }
-        }
-
         updateNews()
-
-        newsViewModel.searchNews.observe(
-            viewLifecycleOwner, Observer { response ->
-                when (response) {
-                    is Resource.Success -> {
-                        hideProgressbar()
-                        response.data?.let { searchNewsResponse ->
-                            newsAdapter.differ.submitList(searchNewsResponse.articles)
-                            val totalPages = searchNewsResponse.totalResults / 20 + 2
-                            isLastPage = newsViewModel.searchNewsPage == totalPages
-                        }
-                    }
-                    is Resource.Error -> {
-                        hideProgressbar()
-                        response.message?.let { message ->
-                            {
-                                Log.e(TAG, "an error occurred: $message")
-                            }
-                        }
-                    }
-                    is Resource.Loading -> {
-                        showProgressbar()
-                    }
-                }
-            }
-        )
     }
 
     private fun updateNews() {
@@ -112,7 +70,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
                     is Resource.Error -> {
                         hideProgressbar()
                         response.message?.let { message ->
-                            Log.e(TAG, "an error occurred: $message")
+                            Toast.makeText(activity, "an error occurred: $message", Toast.LENGTH_SHORT).show()
                         }
                     }
                     is Resource.Loading -> {
@@ -128,7 +86,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
     var isLastPage = false
     var isLoading = false
 
-    var scrollListener = object : RecyclerView.OnScrollListener() {
+    private var scrollListener = object : RecyclerView.OnScrollListener() {
         override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
             super.onScrollStateChanged(recyclerView, newState)
             if (newState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {

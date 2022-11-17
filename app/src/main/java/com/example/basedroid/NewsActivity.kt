@@ -25,31 +25,20 @@ class NewsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_news)
 
+//        val sharedPref = getSharedPreferences(getString(R.string.preference_file), Context.MODE_PRIVATE)
+//        sharedPref.edit().putBoolean(getString(R.string.is_saved_news_fragment_visited_first_time), true).apply()
+
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
         navController = navHostFragment.navController
 
         val newsRepository = NewsRepository(ArticleDatabase.getArticleDatabase(this))
-        val viewModelProviderFactory = NewsViewModelProviderFactory(newsRepository)
+        val viewModelProviderFactory = NewsViewModelProviderFactory(application, newsRepository)
         viewModel = ViewModelProvider(this, viewModelProviderFactory).get(NewsViewModel::class.java)
 
         //Need to provide same id for menu resource file
         bottomNavigationView.setupWithNavController(navController)
 
     }
-
-//    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-//        menuInflater.inflate(R.menu.options_menu, menu)
-//
-//        val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
-//
-//        (menu?.findItem(R.id.search)?.actionView as SearchView).apply {
-//
-//            setSearchableInfo(searchManager.getSearchableInfo(componentName))
-//
-//        }
-//
-//        return true
-//    }
 
 }

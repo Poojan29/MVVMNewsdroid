@@ -2,12 +2,11 @@ package com.example.basedroid.ui.fragments
 
 import android.os.Bundle
 import android.util.Log
-import android.view.ContextMenu
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.View
+import android.view.*
 import android.widget.AbsListView
-import androidx.core.widget.addTextChangedListener
+import android.widget.Toast
+import androidx.appcompat.widget.SearchView
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
@@ -16,16 +15,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.basedroid.NewsActivity
 import com.example.basedroid.R
 import com.example.basedroid.adapters.NewsAdapter
-import com.example.basedroid.model.Article
 import com.example.basedroid.ui.NewsViewModel
 import com.example.basedroid.util.Constant.Companion.QUERY_PAGE_SIZE
 import com.example.basedroid.util.Resource
 import kotlinx.android.synthetic.main.fragment_breaking_news.*
-import kotlinx.android.synthetic.main.single_news_component.*
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
 
@@ -36,7 +29,6 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         newsViewModel = (activity as NewsActivity).viewModel
 
         setUpRecyclerView()
@@ -49,53 +41,10 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
                 bundle
             )
         }
-
-        var job: Job? = null
-
-        search_bar.addTextChangedListener { editable ->
-            job?.cancel()
-            job = MainScope().launch {
-                delay(500L)
-                editable?.let {
-                    if (editable.isNotEmpty()) {
-                        newsViewModel.getSearchNews(editable.toString())
-                    } else {
-                        updateNews()
-                    }
-                }
-            }
-        }
-
-        updateNews()
-
-        newsViewModel.searchNews.observe(
-            viewLifecycleOwner, Observer { response ->
-                when (response) {
-                    is Resource.Success -> {
-                        hideProgressbar()
-                        response.data?.let { searchNewsResponse ->
-                            newsAdapter.differ.submitList(searchNewsResponse.articles)
-                            val totalPages = searchNewsResponse.totalResults / 20 + 2
-                            isLastPage = newsViewModel.searchNewsPage == totalPages
-                        }
-                    }
-                    is Resource.Error -> {
-                        hideProgressbar()
-                        response.message?.let { message ->
-                            {
-                                Log.e(TAG, "an error occurred: $message")
-                            }
-                        }
-                    }
-                    is Resource.Loading -> {
-                        showProgressbar()
-                    }
-                }
-            }
-        )
+        updateNewsRecyclerView()
     }
 
-    private fun updateNews() {
+    private fun updateNewsRecyclerView() {
         newsViewModel.breakingNews.observe(
             viewLifecycleOwner, Observer { response ->
                 when (response) {
@@ -112,7 +61,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
                     is Resource.Error -> {
                         hideProgressbar()
                         response.message?.let { message ->
-                            Log.e(TAG, "an error occurred: $message")
+                            Toast.makeText(activity, message, Toast.LENGTH_SHORT).show()
                         }
                     }
                     is Resource.Loading -> {
@@ -128,7 +77,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
     var isLastPage = false
     var isLoading = false
 
-    var scrollListener = object : RecyclerView.OnScrollListener() {
+    private var scrollListener = object : RecyclerView.OnScrollListener() {
         override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
             super.onScrollStateChanged(recyclerView, newState)
             if (newState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {

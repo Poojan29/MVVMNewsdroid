@@ -6,6 +6,20 @@
     android:layout_height="match_parent"
     tools:context=".ui.fragments.BookmarkNewsFragment">
 
+    <TextView
+        android:id="@+id/no_news"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/you_don_t_have_any_saved_news_yet"
+        android:textColor="?attr/colorPrimary"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/saved_news_recycler_view"
         android:layout_width="match_parent"

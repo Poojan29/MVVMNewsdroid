@@ -24,4 +24,5 @@
     <string name="dialog_title">Attention!!!</string>
     <string name="dialog_message">You can delete your articles by swiping the left side.</string>
     <string name="you_don_t_have_any_saved_news_yet">You don\'t have any saved news yet.</string>
+    <string name="please_search_on_any_topic_you_want">Please search on any topic you want.</string>
 </resources>

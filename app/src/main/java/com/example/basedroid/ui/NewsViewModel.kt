@@ -6,6 +6,7 @@ import android.net.ConnectivityManager
 import android.net.ConnectivityManager.*
 import android.net.NetworkCapabilities.*
 import android.os.Build
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -15,6 +16,7 @@ import com.example.basedroid.model.NewsResponse
 import com.example.basedroid.repository.NewsRepository
 import com.example.basedroid.util.Resource
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import retrofit2.Response
 import java.io.IOException
 
@@ -34,11 +36,13 @@ class NewsViewModel(
     val newsRepository: NewsRepository
 ) : AndroidViewModel(app) {
 
+    val TAG = "NewsViewModel"
+
     val breakingNews: MutableLiveData<Resource<NewsResponse>> = MutableLiveData()
     var breakingNewsPage = 1
     var breakingNewsResponse: NewsResponse? = null
 
-    val searchNews: MutableLiveData<Resource<NewsResponse>> = MutableLiveData()
+    val searchNews: MutableLiveData<Resource<NewsResponse>?> = MutableLiveData()
     var searchNewsPage = 1
     var searchNewsResponse: NewsResponse? = null
 
@@ -50,46 +54,6 @@ class NewsViewModel(
         viewModelScope.launch {
             safeBrakingNews(countryCode)
         }
-    }
-
-    private fun handleBreakingNewsResponse(response: Response<NewsResponse>): Resource<NewsResponse> {
-        if (response.isSuccessful) {
-            response.body()?.let { resultResponse ->
-                breakingNewsPage++
-                if (breakingNewsResponse == null) {
-                    breakingNewsResponse = resultResponse
-                } else {
-                    val oldArticles = breakingNewsResponse?.articles
-                    val newArticles = resultResponse.articles
-                    oldArticles?.addAll(newArticles)
-                }
-                return Resource.Success(breakingNewsResponse ?: resultResponse)
-            }
-        }
-        return Resource.Error(response.message())
-    }
-
-    fun getSearchNews(searchQuery: String) {
-        viewModelScope.launch {
-            safeSearchNews(searchQuery)
-        }
-    }
-
-    private fun handleSearchNewsResponse(response: Response<NewsResponse>): Resource<NewsResponse> {
-        if (response.isSuccessful) {
-            response.body()?.let { resultResponse ->
-                searchNewsPage++
-                if (searchNewsResponse == null) {
-                    searchNewsResponse = resultResponse
-                } else {
-                    val oldArticles = searchNewsResponse?.articles
-                    val newArticles = resultResponse.articles
-                    oldArticles?.addAll(newArticles)
-                }
-                return Resource.Success(searchNewsResponse ?: resultResponse)
-            }
-        }
-        return Resource.Error(response.message())
     }
 
     private suspend fun safeBrakingNews(countryCode: String) {
@@ -109,8 +73,30 @@ class NewsViewModel(
         }
     }
 
+    private fun handleBreakingNewsResponse(response: Response<NewsResponse>): Resource<NewsResponse> {
+        if (response.isSuccessful) {
+            response.body()?.let { resultResponse ->
+                if (breakingNewsResponse == null) {
+                    breakingNewsResponse = resultResponse
+                } else {
+                    breakingNewsPage++
+                    val oldArticles = breakingNewsResponse?.articles
+                    val newArticles = resultResponse.articles
+                    oldArticles?.addAll(newArticles)
+                }
+                return Resource.Success(breakingNewsResponse ?: resultResponse)
+            }
+        }
+        return Resource.Error(response.message())
+    }
+
+    fun getSearchNews(searchQuery: String) {
+        viewModelScope.launch {
+            safeSearchNews(searchQuery)
+        }
+    }
+
     private suspend fun safeSearchNews(searchQuery: String) {
-        searchNews.postValue(Resource.Loading())
         try {
             if (checkNetworkAvailability()){
                 val response = newsRepository.getSearchNews(searchQuery, breakingNewsPage)
@@ -126,7 +112,24 @@ class NewsViewModel(
         }
     }
 
-    private fun checkNetworkAvailability(): Boolean {
+    private fun handleSearchNewsResponse(response: Response<NewsResponse>): Resource<NewsResponse> {
+        if (response.isSuccessful) {
+            response.body()?.let { resultResponse ->
+                if (searchNewsResponse == null) {
+                    searchNewsResponse = resultResponse
+                } else {
+                    searchNewsPage++
+                    val oldArticles = searchNewsResponse?.articles
+                    val newArticles = resultResponse.articles
+                    oldArticles?.addAll(newArticles)
+                }
+                return Resource.Success(searchNewsResponse ?: resultResponse)
+            }
+        }
+        return Resource.Error(response.message())
+    }
+
+    fun checkNetworkAvailability(): Boolean {
         val connectivityManager = getApplication<NewsApplication>().getSystemService(
             Context.CONNECTIVITY_SERVICE
         ) as ConnectivityManager
